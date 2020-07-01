@@ -1,24 +1,28 @@
 package main
 
 import (
-	"fmt"
-	_ "flag"
+	_ "fmt"
+	"flag"
 	"os"
 )
 
 
 
 func main() {
-	
-	//var url string
-	//urlPtr := flag.StringVar(&url, "u", "url", "https://example.com")
 
-	//flag.Parse()
-	
-	fmt.Println("Arg 0 : ", os.Args[1])
+	var url string
+	flag.StringVar(&url, "u", "", "Url for dead links checker")
 
-	if url := os.Args[1]; url != "" {
-		retrieveUrls(url)
+	var writeToFile string 
+	flag.StringVar(&writeToFile, "w", "", "Filename for storage")
+
+	flag.Parse()
+
+	if url == ""{
+		flag.PrintDefaults()
+		os.Exit(0)
 	}
+	
+	checkDeathLinks(url)
 
 }

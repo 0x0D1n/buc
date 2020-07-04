@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"io/ioutil"
 	"github.com/mvdan/xurls"
-	"strings"
+	_ "strings"
 	"log"
+	_ "bufio"
 )
 
 func removeDupUrls(urls []string) []string {
@@ -38,8 +39,23 @@ func retrieveUrls(sourceCode string) []string{
 	return urls
 }
 
+func isLinkDead(urls []string) {
+	
+	for _, v := range urls {
+		resp, err := http.Get(v)
+		if err != nil {
+			fmt.Println(err)
+		}
 
-func checkDeathLinks(url string) {
+		defer resp.Body.Close()
+		
+		beautifyOutput(v, resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
+}
+
+
+//Final function doing everything
+func checkDeadLinks(url string) {
 	
 	resp, err := http.Get(url)
 	
@@ -53,7 +69,7 @@ func checkDeathLinks(url string) {
 	bodyString := string(bodyBytes)
 	links := retrieveUrls(bodyString)
 	
-	//TODO - HANDLE THE NEWS LINKS WE GOT
-	fmt.Print(strings.Join(links[:], "\n"))	
+	//fmt.Print(strings.Join(links[:], "\n"))	
+	isLinkDead(links)
 
 }

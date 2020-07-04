@@ -28,6 +28,6 @@ func main() {
 		os.Exit(0)
 	}
 	
-	checkDeathLinks(url)
+	checkDeadLinks(url)
 
 }

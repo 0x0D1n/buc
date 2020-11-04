@@ -11,7 +11,7 @@ import (
 )
 
 type urlStatus struct {
-	url		string
+	url	string
 	status	bool
 }
 

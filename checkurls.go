@@ -5,10 +5,15 @@ import (
 	"net/http"
 	"io/ioutil"
 	"github.com/mvdan/xurls"
-	_ "strings"
+	"strings"
 	"log"
 	_ "bufio"
 )
+
+type urlStatus struct {
+	url		string
+	status	bool
+}
 
 func removeDupUrls(urls []string) []string {
 	
@@ -17,8 +22,8 @@ func removeDupUrls(urls []string) []string {
 	
 	for v := range urls {
 		if encountered[urls[v]] == true {
-			
-		} else {
+		
+		}else {
 			encountered[urls[v]] = true
 			finalList = append(finalList, urls[v])
 		}
@@ -29,7 +34,6 @@ func removeDupUrls(urls []string) []string {
 
 
 func retrieveUrls(sourceCode string) []string{ 
-	
 	rxStrict := xurls.Strict()
 	rxRelaxed := xurls.Relaxed()
 	urls := []string{}
@@ -40,17 +44,34 @@ func retrieveUrls(sourceCode string) []string{
 }
 
 func isLinkDead(urls []string) {
-	
+	c := make(chan urlStatus)
 	for _, v := range urls {
-		resp, err := http.Get(v)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		defer resp.Body.Close()
-		
-		beautifyOutput(v, resp.StatusCode, http.StatusText(resp.StatusCode))
+		go makeHttpRequest(v, c)
 	}
+	result := make([]urlStatus, len(urls))
+	for i, _ := range result {
+		result[i] = <-c
+		if result[i].status {
+			fmt.Println(result[i].url, "is up.")
+		} else {
+			fmt.Println(result[i].url, "is down !!")
+		}
+	}
+		
+	//beautifyOutput(v, resp.StatusCode, http.StatusText(resp.StatusCode))
+}
+
+
+func makeHttpRequest(url string, c chan urlStatus){
+	_, err := http.Get(url)
+	if err != nil {
+		//HTTP Failure
+		c <- urlStatus{url, false}
+	}else {
+		//HTTP Success
+		c <- urlStatus{url, true}
+	}
+
 }
 
 
@@ -69,7 +90,10 @@ func checkDeadLinks(url string) {
 	bodyString := string(bodyBytes)
 	links := retrieveUrls(bodyString)
 	
-	//fmt.Print(strings.Join(links[:], "\n"))	
+	fmt.Print(strings.Join(links[:], "\n"))	
+	//fmt.Println()
+	//fmt.Println("------------------------")
+	//fmt.Println()
 	isLinkDead(links)
 
 }

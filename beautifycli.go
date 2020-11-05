@@ -18,9 +18,20 @@ const (
 
 func beautifyOutput(url string, statuscode int, statustext string) {
 	
-	if statuscode >= RedirectionCode {
-		fmt.Println(url, " -> ", aurora.Red(statuscode), aurora.Red(statustext))
-	}else {
-		fmt.Println(url, " -> ", aurora.Green(statuscode), aurora.Green(statustext))
+	switch {
+		case statuscode >= 100 && statuscode <= 199:
+			fmt.Println("[+] ", url, "  ", aurora.Yellow(statuscode), aurora.Yellow(statustext))
+		case statuscode >= 200 && statuscode <= 299:
+			fmt.Println("[+] ", url, "  ", aurora.Green(statuscode), aurora.Green(statustext))
+		case statuscode >= 300 && statuscode <= 399:
+			fmt.Println("[+] ", url, "  ", aurora.Magenta(statuscode), aurora.Magenta(statustext))
+		case statuscode >= 400 && statuscode <= 499:
+			fmt.Println("[+] ", url, "  ", aurora.Red(statuscode), aurora.Red(statustext))
+		case statuscode >= 500:
+			fmt.Println("[+] ", url, "  ", aurora.Red(statuscode), aurora.Red(statustext))
 	}
 }
+
+
+
+

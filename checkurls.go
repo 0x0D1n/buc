@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
+	_ "fmt"
 	"net/http"
 	"io/ioutil"
 	"github.com/mvdan/xurls"
-	"strings"
+	_ "strings"
 	"log"
 	_ "bufio"
 )
@@ -13,6 +13,8 @@ import (
 type urlStatus struct {
 	url	string
 	status	bool
+	statusCode int
+	statusText string
 }
 
 func removeDupUrls(urls []string) []string {
@@ -34,6 +36,10 @@ func removeDupUrls(urls []string) []string {
 
 
 func retrieveUrls(sourceCode string) []string{ 
+	/*
+	xurls gathers URLs containing ':' -> Leading to wrong Urls being gathered
+	Needs to be done manually - Regex
+	*/
 	rxStrict := xurls.Strict()
 	rxRelaxed := xurls.Relaxed()
 	urls := []string{}
@@ -51,10 +57,11 @@ func isLinkDead(urls []string) {
 	result := make([]urlStatus, len(urls))
 	for i, _ := range result {
 		result[i] = <-c
-		if result[i].status {
-			fmt.Println(result[i].url, "is up.")
-		} else {
-			fmt.Println(result[i].url, "is down !!")
+		if result[i].statusCode != 0 {
+			if result[i].status {
+				//fmt.Println(result[i].url, "is up and status code is ", result[i].statusCode)
+				beautifyOutput(result[i].url, result[i].statusCode, result[i].statusText)
+			}
 		}
 	}
 		
@@ -63,13 +70,18 @@ func isLinkDead(urls []string) {
 
 
 func makeHttpRequest(url string, c chan urlStatus){
-	_, err := http.Get(url)
+	resp, err := http.Get(url)
+	var statusCode int
+	var statusText string
 	if err != nil {
 		//HTTP Failure
-		c <- urlStatus{url, false}
+		c <- urlStatus{url, false, statusCode, statusText}
+		//fmt.Println("Failure : ",url)
 	}else {
 		//HTTP Success
-		c <- urlStatus{url, true}
+		statusCode := resp.StatusCode
+		statusText := http.StatusText(resp.StatusCode)
+		c <- urlStatus{url, true, statusCode, statusText}
 	}
 
 }
@@ -90,10 +102,7 @@ func checkDeadLinks(url string) {
 	bodyString := string(bodyBytes)
 	links := retrieveUrls(bodyString)
 	
-	fmt.Print(strings.Join(links[:], "\n"))	
-	//fmt.Println()
-	//fmt.Println("------------------------")
-	//fmt.Println()
+	//fmt.Print(strings.Join(links[:], "\n"))	
 	isLinkDead(links)
 
 }

@@ -4,30 +4,46 @@ import (
 	"fmt"
 	"flag"
 	"os"
-	"strings"
+	_"strings"
 )
 
 
 func main() {
 
 	var url string
-	flag.StringVar(&url, "u", "", "Url for dead links checker")
+	flag.StringVar(&url, "u", "", "URL for dead links checker")
+
+	var filename string
+	flag.StringVar(&filename, "f", "", "file containing URLs to test")
 
 	var writeToFile string 
 	flag.StringVar(&writeToFile, "w", "", "Filename for storage")
 
 	flag.Parse()
 
-	if url == "" {
+	var params string
+
+	if url != ""{
+		params = "u"
+		fmt.Println("URL")
+	}else if filename != ""{
+		params = "f"
+		fmt.Println("File")
+	}else{
+		params = ""
 		flag.PrintDefaults()
 		os.Exit(0)
 	}
 
-	if strings.HasPrefix(url, "http") == false {
-		fmt.Println("Please enter a scheme like http before the url")
-		os.Exit(0)
+	if params == "f" {
+		urls, _ := readUrlsFromFile(filename)
+		for i := 0 ; i < len(urls) ; i++ {
+			checkDeadLinks(urls[i])
+		}
 	}
-	
-	checkDeadLinks(url)
+
+	if params == "u" {
+		checkDeadLinks(url)
+	}
 
 }

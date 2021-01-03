@@ -7,12 +7,14 @@ import (
 	"os"
 )
 
-
-func readUrlsFromFile(path string) ([]string, error) {
+//https://stackoverflow.com/questions/5884154/read-text-file-into-string-array-and-write
+func readUrlsFromFile(path string) ([]string, error){
 	f, err := os.Open(path)
 
 	if err != nil {
-		return nil, err
+		//return nil, err
+		fmt.Println("[+] Error occured during file handling ...")
+		os.Exit(0)
 	}
 
 	defer f.Close()
@@ -22,6 +24,7 @@ func readUrlsFromFile(path string) ([]string, error) {
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
+
 	return lines, scanner.Err()
 }
 

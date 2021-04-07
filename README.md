@@ -9,4 +9,13 @@ I know
 
 #### Work in progress
 
-![Image of BUC in action](https://github.com/0x0D1n/buc/blob/master/program.png)
+Options:  
+-f : check urls from a file  
+-u : check url from cli directly  
+-w : write results to a file (HTTP Code != 200)  
+  
+![Image of the Menu BUC](https://github.com/0x0D1n/buc/blob/master/images/menu.png)
+  
+Preview in action  
+  
+![Image of BUC in action](https://github.com/0x0D1n/buc/blob/master/images/program.png)

@@ -1,13 +1,15 @@
 package main
 
 import (
-	_ "fmt"
+	"fmt"
 	"net/http"
 	"io/ioutil"
-	"github.com/mvdan/xurls"
+	_"github.com/mvdan/xurls"
+	"mvdan.cc/xurls/v2"
 	_ "strings"
 	"log"
 	_ "bufio"
+	"strconv"
 )
 
 type urlStatus struct {
@@ -35,7 +37,7 @@ func removeDupUrls(urls []string) []string {
 }
 
 
-func retrieveUrls(sourceCode string) []string{ 
+func retrieveUrls(sourceCode string) []string{
 	/*
 	xurls gathers URLs containing ':' -> Leading to wrong Urls being gathered
 	Needs to be done manually - Regex
@@ -49,8 +51,11 @@ func retrieveUrls(sourceCode string) []string{
 	return urls
 }
 
-func isLinkDead(urls []string) {
+func isLinkDead(urls []string) []string {
 	c := make(chan urlStatus)
+	var interestURLs []string
+	var fmtStringURL string
+
 	for _, v := range urls {
 		go makeHttpRequest(v, c)
 	}
@@ -61,11 +66,17 @@ func isLinkDead(urls []string) {
 			if result[i].status {
 				//fmt.Println(result[i].url, "is up and status code is ", result[i].statusCode)
 				beautifyOutput(result[i].url, result[i].statusCode, result[i].statusText)
+				//For storage to file of the interessting HTTP status codes
+				//Better way then != 200 ? Should be enough for the moment
+				if result[i].statusCode != 200 {
+					fmtStringURL = string(result[i].url) + "," + strconv.Itoa(result[i].statusCode)
+					interestURLs = append(interestURLs, fmtStringURL)
+					fmt.Println(interestURLs)
+				}
 			}
 		}
 	}
-		
-	//beautifyOutput(v, resp.StatusCode, http.StatusText(resp.StatusCode))
+	return interestURLs
 }
 
 
@@ -88,7 +99,7 @@ func makeHttpRequest(url string, c chan urlStatus){
 
 
 //Final function doing everything
-func checkDeadLinks(url string) {
+func checkDeadLinks(url string) []string{
 	
 	resp, err := http.Get(url)
 	
@@ -103,6 +114,7 @@ func checkDeadLinks(url string) {
 	links := retrieveUrls(bodyString)
 	
 	//fmt.Print(strings.Join(links[:], "\n"))	
-	isLinkDead(links)
+	interestURLs := isLinkDead(links)
 
+	return interestURLs
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"flag"
-	"os"
+	_"os"
 	_"strings"
 )
 
@@ -17,33 +17,42 @@ func main() {
 	flag.StringVar(&filename, "f", "", "file containing URLs to test")
 
 	var writeToFile string 
-	flag.StringVar(&writeToFile, "w", "", "Filename for storage")
+	//Let the user choose the HTTP code to store in the file ?
+	flag.StringVar(&writeToFile, "w", "", "filename for storage of != 200 HTTP Error codes URLs")
 
 	flag.Parse()
 
 	var params string
 
-	if url != ""{
+
+	if url != "" {
 		params = "u"
-		fmt.Println("URL")
-	}else if filename != ""{
+	}else if filename != "" {
 		params = "f"
-		fmt.Println("File")
 	}else{
-		params = ""
 		flag.PrintDefaults()
-		os.Exit(0)
 	}
 
+	var interestURLs []string
+
 	if params == "f" {
+		var tmpInterestURLs []string
 		urls, _ := readUrlsFromFile(filename)
 		for i := 0 ; i < len(urls) ; i++ {
-			checkDeadLinks(urls[i])
+			tmpInterestURLs = checkDeadLinks(urls[i])
+			for x := range tmpInterestURLs{
+				interestURLs = append(interestURLs, tmpInterestURLs[x])
+			}
 		}
 	}
 
 	if params == "u" {
-		checkDeadLinks(url)
+		interestURLs = checkDeadLinks(url)
+	}
+
+	if writeToFile != "" {
+		fmt.Println("[+] Written results to file > ", writeToFile)
+		writeUrlsToFile(writeToFile, interestURLs)
 	}
 
 }

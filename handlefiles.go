@@ -12,7 +12,6 @@ func readUrlsFromFile(path string) ([]string, error){
 	f, err := os.Open(path)
 
 	if err != nil {
-		//return nil, err
 		fmt.Println("[+] Error occured during file handling ...")
 		os.Exit(0)
 	}
